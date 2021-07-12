@@ -1,2 +1,2 @@
 from .views import *
-from .authentication import TokenObtainPairView, TokenRefreshView, TokenVerifyView, CustomTokenObtainPairView
+from .authentication import TokenObtainPairView, CustomTokenObtainPairView

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'graphene_django',
     'rest_framework',
     'drf_yasg',
+    'django_filters'
 ]
 
 GRAPHENE = {
@@ -72,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'base.context_processors.getvars'  # keep parameter on GET request with page number
             ],
         },
     },
@@ -149,6 +151,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'media')
 ]
 
 REST_FRAMEWORK = {
@@ -211,3 +214,5 @@ AUTH_USER_MODEL = 'backend.User'
 
 # changed in django 3.0 to DENY (affect add modal on admin) https://docs.djangoproject.com/en/3.1/ref/clickjacking/#setting-x-frame-options-for-all-responses
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+APPEND_SLASH = False
