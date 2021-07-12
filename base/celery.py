@@ -19,6 +19,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
 
+
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     # Calls test('world') every 30 seconds
@@ -26,9 +27,11 @@ def setup_periodic_tasks(sender, **kwargs):
     # sender.add_periodic_task(10.0, test.s('Hello World'))
     print("setup_periodic_tasks")
 
-@app.task(bind=True)
-def debug_task(self):
-    print('Request: {0!r}'.format(self.request))
+
+# @app.task(bind=True)
+# def debug_task(self):
+#     print('Request: {0!r}'.format(self.request))
+
 
 @app.task
 def test(str):

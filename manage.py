@@ -5,7 +5,8 @@ import time
 import psycopg2
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'), verbose=True)
+load_dotenv(dotenv_path=os.path.join(
+    os.path.dirname(__file__), '.env'), verbose=True)
 
 if __name__ == "__main__":
 
@@ -13,11 +14,11 @@ if __name__ == "__main__":
         while True:
             try:
                 connection = psycopg2.connect(
-                    dbname=os.environ.get('POSTGRES_DEFAULT_DB'),
-                    user=os.environ.get('POSTGRES_DEFAULT_USER'),
-                    password=os.environ.get('POSTGRES_DEFAULT_PASSWORD'),
-                    host=os.environ.get('POSTGRES_DEFAULT_HOST'),
-                    port=os.environ.get('POSTGRES_DEFAULT_PORT')
+                    dbname=os.environ.get('POSTGRES_DB'),
+                    user=os.environ.get('POSTGRES_USER'),
+                    password=os.environ.get('POSTGRES_PASSWORD'),
+                    host=os.environ.get('POSTGRES_HOST'),
+                    port=os.environ.get('POSTGRES_EXPOSE_PORT')
                 )
 
                 if connection.closed == 0:

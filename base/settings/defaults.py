@@ -11,10 +11,11 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+BASE_DIR = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -25,7 +26,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('ENVIRONMENT') == "development"
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.herokuapp.com', '0.0.0.0', 'testserver' ]
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0', 'testserver']
 
 
 # Application definition
@@ -41,16 +42,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'graphene_django',
     'rest_framework',
-    'debug_toolbar',
+    'drf_yasg',
+    'django_filters'
 ]
 
 GRAPHENE = {
-    'SCHEMA': 'base.schema.schema' # Where your Graphene schema lives
+    'SCHEMA': 'base.schema.schema'  # Where your Graphene schema lives
 }
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'base.context_processors.getvars'  # keep parameter on GET request with page number
             ],
         },
     },
@@ -81,8 +82,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'base.wsgi.application'
 
 # Celery
-CELERY_BROKER_URL = 'amqp://%s:%s@rabbit:5672' % (os.environ.get('RABBITMQ_DEFAULT_USER'), os.environ.get('RABBITMQ_DEFAULT_PASS'))
-CELERY_RESULT_BACKEND = 'redis://redis'
+CELERY_BROKER_URL = 'amqp://%s:%s@%s:%s' % (os.environ.get('RABBITMQ_DEFAULT_USER'), os.environ.get(
+    'RABBITMQ_DEFAULT_PASS'), os.environ.get('RABBITMQ_HOST'), os.environ.get('RABBITMQ_EXPOSE_PORT'))
+CELERY_RESULT_BACKEND = 'redis://localhost:%s' % os.environ.get(
+    'REDIS_EXPOSE_PORT')
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
@@ -90,11 +93,11 @@ CELERY_RESULT_BACKEND = 'redis://redis'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('POSTGRES_DEFAULT_DB'),
-        'USER': os.environ.get('POSTGRES_DEFAULT_USER'),
-        'PASSWORD': os.environ.get('POSTGRES_DEFAULT_PASSWORD'),
-        'HOST': os.environ.get('POSTGRES_DEFAULT_HOST'),
-        'PORT': os.environ.get('POSTGRES_DEFAULT_PORT'),
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST'),
+        'PORT': os.environ.get('POSTGRES_EXPOSE_PORT'),
     }
 }
 
@@ -131,13 +134,13 @@ USE_L10N = True
 
 USE_TZ = True
 
-USE_THOUSAND_SEPARATOR=True
+USE_THOUSAND_SEPARATOR = True
 
-THOUSAND_SEPARATOR=','
+THOUSAND_SEPARATOR = ','
 
-DECIMAL_SEPARATOR='.'
+DECIMAL_SEPARATOR = '.'
 
-NUMBER_GROUPING=3
+NUMBER_GROUPING = 3
 
 # https://devcenter.heroku.com/articles/django-assets
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -148,6 +151,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'media')
 ]
 
 REST_FRAMEWORK = {
@@ -157,13 +161,58 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAdminUser'
     ],
     # 'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
+    'DEFAULT_RENDERER_CLASSES': (
+        'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
+        'djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'djangorestframework_camel_case.parser.CamelCaseFormParser',
+        'djangorestframework_camel_case.parser.CamelCaseMultiPartParser',
+        'djangorestframework_camel_case.parser.CamelCaseJSONParser',
+    ),
 }
 
-def show_toolbar(request):
-    return DEBUG
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
 
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK" : show_toolbar,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+
+    'JTI_CLAIM': 'jti',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
 }
 
 AUTH_USER_MODEL = 'backend.User'
+
+# changed in django 3.0 to DENY (affect add modal on admin) https://docs.djangoproject.com/en/3.1/ref/clickjacking/#setting-x-frame-options-for-all-responses
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+APPEND_SLASH = False

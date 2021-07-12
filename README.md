@@ -1,3 +1,33 @@
+## Prerequisite
+- Docker
+- docker-compose
+- python >= 3.8
+- poetry >= 1.1.4
+
+## Install dependencies
+
+This project uses `poetry` as its package manager. To install dependencies, run
+
+```
+poetry install
+```
+
+## Development
+
+### poetry
+
+Activate `poetry` env first
+
+```
+poetry shell
+```
+
+When install new package, need to export `requirements.txt` for circleci to run
+
+```
+poetry export --dev -f requirements.txt --output requirements.txt
+```
+
 ### Production:
 export DJANGO_SETTINGS_MODULE=base.settings.production
 
@@ -5,39 +35,29 @@ export DJANGO_SETTINGS_MODULE=base.settings.production
 
 export DJANGO_SETTINGS_MODULE=base.settings.dev
 
-#### Bash
+
+### Start dev
 ```
-if [ -f "$PWD/venv/bin/activate" ]; then
-    source "$PWD/venv/bin/activate"
-fi
-```
-
-#### heroku deploy 
-heroku create
-
-heroku config:set DISABLE_COLLECTSTATIC=1
-
-heroku config:set DJANGO_SETTINGS_MODULE=base.settings.heroku
-
-git push heroku master
-
-heroku run python manage.py migrate
-
-heroku run python manage.py createsuperuser
-
-heroku open
-
-### Docker:
-
-#### Prerequisite
-Docker version 18.03.1-ce, build 9ee9f40
-docker-compose version 1.21.1, build 5a3f1a3
-
-#### Start dev
 cp .env.example .env
+docker-compose up -d
+./manage.py migrate
+./manage.py createsuperuser
+./manage.py runserver 0.0.0.0:8000
+```
 
-docker-compose up
+### Start celery worker / beat
+```
+celery -A base worker --beat -l info
+```
 
-docker-compose exec web python3 manage.py migrate
+## Test
+```
+./manage.py test
+```
 
-docker-compose exec web python3 manage.py createsuperuser
+### coverage
+
+```
+coverage run --omit '.venv/*' --source='.' manage.py test api
+coverage html
+```
