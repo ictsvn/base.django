@@ -6,7 +6,9 @@ import graphene
 class UserType(DjangoObjectType):
     class Meta:
         model = User
-        exclude = ('password',)
+        fields = ('id', 'username', 'extra_field')
+
+    extra_field = graphene.String()
 
     def resolve_extra_field(self, info):
         return 'hello!'

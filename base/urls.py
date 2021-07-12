@@ -28,6 +28,7 @@ admin.site.site_header = os.environ.get(
     'ADMIN_SITE_HEADER') or 'Django administration'
 
 urlpatterns = [
+    path('', include('backend.urls')),
     path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
     path('graphql', GraphQLView.as_view(graphiql=True)),

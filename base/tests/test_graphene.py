@@ -27,7 +27,8 @@ class GrapheneTest(GraphQLTestCase):
             query {
                 users {
                     id,
-                    username
+                    username,
+                    extraField
                 }
             }
             '''
@@ -35,6 +36,7 @@ class GrapheneTest(GraphQLTestCase):
 
         content = json.loads(response.content)
         self.assertEqual(content['data']['users'][0]['username'], "admin")
+        self.assertEqual(content['data']['users'][0]['extraField'], "hello!")
         self.assertEqual(len(content['data']['users']), 1)
 
         # This validates the status code and if you get errors
