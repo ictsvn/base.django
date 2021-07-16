@@ -16,10 +16,10 @@ Including another URLconf
 import os
 from django.urls import include, path
 from django.contrib import admin
-from django.conf import settings
+# from django.conf import settings
 from graphene_django.views import GraphQLView
-from django.views.generic import TemplateView
-import sys
+# from django.views.generic import TemplateView
+# import sys
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -28,6 +28,7 @@ admin.site.site_header = os.environ.get(
     'ADMIN_SITE_HEADER') or 'Django administration'
 
 urlpatterns = [
+    path('', include('backend.urls')),
     path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
     path('graphql', GraphQLView.as_view(graphiql=True)),

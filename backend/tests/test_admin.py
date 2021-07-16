@@ -4,11 +4,9 @@ from django.contrib.admin.sites import AdminSite
 from django.contrib.admin.models import LogEntry
 from backend.admin import LogEntryAdmin
 
-from django.contrib.admin.options import (
-    ModelAdmin
-)
-
 # Create your tests here.
+
+
 class LogEntryModelAdminTest(TestCase):
 
     def setUp(self):
@@ -19,11 +17,11 @@ class LogEntryModelAdminTest(TestCase):
         )
         self.site = AdminSite()
         return None
-    
+
     def test_modeladmin_str(self):
         ma = LogEntryAdmin(LogEntry, self.log_entry)
         self.assertEqual(str(ma), 'admin.LogEntryAdmin')
-    
+
     def test_get_string(self):
         ma = LogEntryAdmin(LogEntry, self.log_entry)
         self.assertEqual(ma.get_string('Changed "admin" - Changed password.'), 'Changed "admin" - Changed password.')

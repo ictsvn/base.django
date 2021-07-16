@@ -1,0 +1,73 @@
+name: Deploy To Server
+
+on:
+  push:
+    branches: 
+    - master
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Cache Dependencies
+      uses: actions/cache@v2
+      id: cache
+      with:
+        path: ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-pip-${{ hashFiles('requirements.txt') }}
+
+    - name: Install Dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        echo "Installing dependencies and caching them."
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Start containers
+      run: |
+        pip cache dir
+        cp .env.example .env
+        docker-compose -f "docker-compose.yml" up -d --build
+
+    - name: Run Tests
+      run: |
+        sleep 10
+        coverage run manage.py test -v 2 && coverage report && coverage html
+        flake8 --output-file=flake8_style_results.txt
+
+    - name: Stop containers
+      if: always()
+      run: docker-compose -f "docker-compose.yml" down
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-results
+        path: |
+          htmlcov
+          flake8_style_results.txt
+      # Use always() to always run this step to publish test results when there are test failures
+      if: ${{ always() }}
+
+  deploy-to-server:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment:
+      name: Dev
+    steps:
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd base.django/
+            git pull

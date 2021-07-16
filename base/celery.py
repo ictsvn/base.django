@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
-from celery.schedules import crontab
+# from celery.schedules import crontab
 from dotenv import load_dotenv
 
 # set the default Django settings module for the 'celery' program.
@@ -28,9 +28,9 @@ def setup_periodic_tasks(sender, **kwargs):
     print("setup_periodic_tasks")
 
 
-@app.task(bind=True)
-def debug_task(self):
-    print('Request: {0!r}'.format(self.request))
+# @app.task(bind=True)
+# def debug_task(self):
+#     print('Request: {0!r}'.format(self.request))
 
 
 @app.task

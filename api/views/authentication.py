@@ -1,7 +1,5 @@
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView,
+    TokenObtainPairView
 )
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 

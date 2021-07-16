@@ -24,7 +24,7 @@ if __name__ == "__main__":
                 if connection.closed == 0:
                     break
                 time.sleep(1)
-            except:
+            except Exception:
                 time.sleep(1)
                 print("DB is not yet ready. Retry")
                 pass

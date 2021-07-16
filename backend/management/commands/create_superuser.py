@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-import random
 from backend.models import User
 from faker import Faker
 from dotenv import load_dotenv
