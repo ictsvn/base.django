@@ -9,6 +9,7 @@
 This project uses `poetry` as its package manager. To install dependencies, run
 
 ```
+poetry config virtualenvs.in-project true
 poetry install
 ```
 
@@ -61,10 +62,6 @@ celery -A base worker --beat -l info
 coverage run --omit '.venv/*' --source='.' manage.py test api
 coverage html
 ```
-
-# Extra poetry setup
-
-poetry config virtualenvs.in-project true
 
 # Social login
 ## getting access token 
