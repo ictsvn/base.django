@@ -61,3 +61,11 @@ celery -A base worker --beat -l info
 coverage run --omit '.venv/*' --source='.' manage.py test api
 coverage html
 ```
+
+### Social login
+## getting access token 
+# GOOGLE
+https://developers.google.com/oauthplayground/
+scope url https://www.googleapis.com/auth/plus.me
+# FACEBOOK
+https://developers.facebook.com/tools/explorer/
