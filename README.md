@@ -62,10 +62,10 @@ coverage run --omit '.venv/*' --source='.' manage.py test api
 coverage html
 ```
 
-### Social login
+# Social login
 ## getting access token 
-# GOOGLE
+### GOOGLE
 https://developers.google.com/oauthplayground/
 scope url https://www.googleapis.com/auth/plus.me
-# FACEBOOK
+### FACEBOOK
 https://developers.facebook.com/tools/explorer/
