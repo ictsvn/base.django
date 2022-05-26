@@ -62,6 +62,10 @@ coverage run --omit '.venv/*' --source='.' manage.py test api
 coverage html
 ```
 
+# Extra poetry setup
+
+poetry config virtualenvs.in-project true
+
 # Social login
 ## getting access token 
 ### GOOGLE
