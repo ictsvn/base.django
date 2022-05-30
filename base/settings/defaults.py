@@ -221,6 +221,8 @@ SWAGGER_SETTINGS = {
 }
 
 AUTH_USER_MODEL = 'backend.User'
+# change in Django 3.2 https://docs.djangoproject.com/en/3.2/releases/3.2/#customizing-type-of-auto-created-primary-keys
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # changed in django 3.0 to DENY (affect add modal on admin)
 # https://docs.djangoproject.com/en/3.1/ref/clickjacking/#setting-x-frame-options-for-all-responses
