@@ -79,6 +79,10 @@ class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(max_length=255, required=True, write_only=True)
 
+    def validate_email(self, value):  # comment this function to allow multiple users with same email
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("A user already registered with this email address")
+
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError("Username already existed")

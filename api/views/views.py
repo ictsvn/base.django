@@ -278,6 +278,7 @@ class social_login(APIView):
             backend_instance = backend()
             request.social_auth_backend = backend
             if access_token:
+                # https://python-social-auth.readthedocs.io/en/latest/use_cases.html#signup-by-oauth-access-token
                 user = backend_instance.do_auth(access_token)
                 refresh = RefreshToken.for_user(user)
                 return JsonResponse({
