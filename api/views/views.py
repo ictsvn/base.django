@@ -2,25 +2,25 @@ from rest_framework import serializers, viewsets
 from django.contrib import admin
 
 #
-#Django
+# Django
 from django.shortcuts import render
 from backend.models import User
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from django.core.paginator import InvalidPage
 
-#Rest-framework
+# Rest-framework
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.backends import TokenBackend
 
-#DRF Swagger
+# DRF Swagger
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-#Apps
+# Apps
 from api.jwt_authentication import CustomJWTAuthentication
 from api.serializers import (
     ListPagination,
@@ -29,8 +29,9 @@ from api.serializers import (
     SignUpSerializer,
     SocialRegisterSerializer
 )
-from social_core.backends.utils import get_backend
-from django.conf import settings
+
+from utils.oauth2 import get_facebook_user_info, get_google_user_info
+
 
 class LogEntrySerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,6 +52,8 @@ class UserSerializer(serializers.ModelSerializer):
             'password',)
 
 # abc
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -108,8 +111,8 @@ class signin(APIView):
         if serializer.is_valid():
             user = authenticate(
                 request,
-                username=received_json_data['username'],
-                password=received_json_data['password'])
+                username=serializer.validated_data['username'],
+                password=serializer.validated_data['password'])
             if user is not None:
                 refresh = RefreshToken.for_user(user)
                 return JsonResponse({
@@ -272,18 +275,32 @@ class social_login(APIView):
         received_json_data = request.data
         serializer = SocialRegisterSerializer(data=received_json_data)
         if serializer.is_valid():
-            provider = request.data['provider']
-            access_token = request.data['access_token']
-            backend = get_backend(settings.AUTHENTICATION_BACKENDS, provider)
-            backend_instance = backend()
-            request.social_auth_backend = backend
-            if access_token:
-                # https://python-social-auth.readthedocs.io/en/latest/use_cases.html#signup-by-oauth-access-token
-                user = backend_instance.do_auth(access_token)
-                refresh = RefreshToken.for_user(user)
-                return JsonResponse({
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }, status=200)
+            provider = serializer.validated_data['provider']
+            access_token = serializer.validated_data['access_token']
+            if provider == 'google-oauth2':
+                user_infos = get_google_user_info(access_token)
+                user, created = User.objects.get_or_create(
+                    email=user_infos['email'],
+                    defaults={
+                        'username': user_infos['username'],
+                        'first_name': user_infos['first_name'],
+                        'last_name': user_infos['last_name']
+                    }
+                )
+            elif provider == 'facebook':
+                user_infos = get_facebook_user_info(access_token)
+                user, created = User.objects.get_or_create(
+                    username=user_infos['username'],
+                    defaults={
+                        'email': user_infos['email'],
+                        'first_name': user_infos['first_name'],
+                        'last_name': user_infos['last_name']
+                    }
+                )
+            refresh = RefreshToken.for_user(user)
+            return JsonResponse({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=200)
         else:
             return JsonResponse({'message': serializer.errors}, status=400)

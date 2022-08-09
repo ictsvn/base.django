@@ -1,15 +1,13 @@
-from rest_framework import serializers, viewsets, status
+from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.authtoken.models import Token
 
 from backend.models import User
 import django.contrib.auth.password_validation as validators
 from django.core import exceptions
-from django.conf import settings
-from social_core.exceptions import MissingBackend
-from social_core.backends.utils import get_backend
+from utils import get_google_user_info
+from utils.oauth2 import get_facebook_user_info
 
 
 class ListPagination(PageNumberPagination):
@@ -59,7 +57,7 @@ class ListPagination(PageNumberPagination):
 
 class SignInSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255, required=True)
-    password = serializers.CharField(max_length=255, required=True, write_only=True)
+    password = serializers.CharField(max_length=255, required=True, write_only=True, allow_blank=True)
 
 
 class RefreshSeriarlizer(serializers.Serializer):
@@ -102,17 +100,16 @@ class SocialRegisterSerializer(serializers.Serializer):
     access_token = serializers.CharField(required=True)
 
     def validate_provider(self, value):
-        try:
-            get_backend(settings.AUTHENTICATION_BACKENDS, value)
-            return value
-        except MissingBackend:
+        if value not in ['facebook', 'google-oauth2', 'apple-id']:
             raise serializers.ValidationError("Invalid provider, options are 'facebook', 'google-oauth2', 'apple-id'")
+        return value
 
     def validate(self, data):
         try:
-            backend = get_backend(settings.AUTHENTICATION_BACKENDS, data['provider'])
-            backend_instance = backend()
-            backend_instance.do_auth(data['access_token'])
+            if data['provider'] == 'google-oauth2':
+                get_google_user_info(data['access_token'])
+            elif data['provider'] == 'facebook':
+                get_facebook_user_info(data['access_token'])
             return data
         except Exception:
             raise serializers.ValidationError({"access_token": ["Invalid token"]})

@@ -29,7 +29,6 @@ admin.site.site_header = os.environ.get(
 
 urlpatterns = [
     path('', include('backend.urls')),
-    path('', include('social_django.urls', namespace='social')),
     path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
     path('graphql', GraphQLView.as_view(graphiql=True)),
